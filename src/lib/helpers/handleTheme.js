@@ -1,13 +1,11 @@
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/no-webpack-loader-syntax */
 import settings from "electron-settings";
-import { ipcRenderer, remote } from "electron";
+import { ipcRenderer } from "electron";
 import darkTheme from "!!raw-loader!../../styles/theme-dark.css";
 import lightTheme from "!!raw-loader!../../styles/theme.css";
 
-const { nativeTheme } = remote;
-
-const updateMyAppTheme = () => {
+const updateMyAppTheme = async () => {
   const settingsTheme = settings.get("theme");
   const theme =
     settingsTheme === "dark"
@@ -16,18 +14,17 @@ const updateMyAppTheme = () => {
       ? "light"
       : "system";
 
-  const darkMode =
-    theme === "dark" || (theme === "system" && nativeTheme.shouldUseDarkColors);
+  const shouldUseDark = await ipcRenderer.invoke("should-use-dark-colors");
+
+  const darkMode = theme === "dark" || (theme === "system" && shouldUseDark);
 
   const themeStyle = document.getElementById("theme");
   themeStyle.innerHTML = darkMode ? darkTheme : lightTheme;
 
-  if (nativeTheme.themeSource !== theme) {
-    nativeTheme.themeSource = theme;
-  }
+  ipcRenderer.invoke("set-theme-source", theme);
 };
 
-nativeTheme.on("updated", () => {
+ipcRenderer.on("native-theme-updated", () => {
   updateMyAppTheme();
 });
 

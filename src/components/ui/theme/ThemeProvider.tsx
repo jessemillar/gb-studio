@@ -65,11 +65,11 @@ const Provider: FC = ({ children }) => {
       }
     };
 
-    ipcRenderer?.on("native-theme-updated", () => {
+    ipcRenderer.on("native-theme-updated", () => {
       updateAppTheme();
     });
 
-    ipcRenderer?.on("update-theme", () => {
+    ipcRenderer.on("update-theme", () => {
       updateAppTheme();
     });
 

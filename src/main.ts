@@ -552,8 +552,21 @@ ipcMain.handle("should-use-dark-colors", async (_event) => {
   return nativeTheme.shouldUseDarkColors;
 });
 
+ipcMain.handle("set-theme-source", async (_event, theme) => {
+  if (nativeTheme.themeSource !== theme) {
+    nativeTheme.themeSource = theme;
+  }
+});
+
 ipcMain.handle("get-path", async (event, type) => {
   return app.getPath(type);
+});
+
+ipcMain.on("get-app-locale-sync", (event) => {
+  const settingsLocale = app && settings.get("locale");
+  const systemLocale = app ? app.getLocale() : "en";
+  const appLocale = String(settingsLocale || systemLocale);
+  event.returnValue = appLocale;
 });
 
 menu.on("new", async () => {
