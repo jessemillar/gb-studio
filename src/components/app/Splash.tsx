@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Path from "path";
-import { ipcRenderer, remote } from "electron";
+import { ipcRenderer } from "electron";
 import settings from "electron-settings";
 import FocusLock, { AutoFocusInside } from "react-focus-lock";
 import { FlexGrow } from "ui/spacing/Spacing";
@@ -46,8 +46,6 @@ import initElectronL10n from "lib/helpers/initElectronL10n";
 // Make sure localisation has loaded so that
 // l10n function can be used at top level
 initElectronL10n();
-
-const { dialog, shell } = remote;
 
 declare const DOCS_URL: string;
 
@@ -95,9 +93,9 @@ const templates: TemplateInfo[] = [
 const getLastUsedPath = () => {
   const storedPath = String(settings.get("__lastUsedPath"));
   if (storedPath && storedPath !== "undefined") {
-    return Path.normalize(storedPath);
+    return Promise.resolve(Path.normalize(storedPath));
   }
-  return remote.app.getPath("documents");
+  return ipcRenderer.invoke("get-path", "documents");
 };
 
 const setLastUsedPath = (path: string) => {
@@ -129,11 +127,15 @@ export default () => {
   const [openCredits, setOpenCredits] = useState(false);
   const [recentProjects, setRecentProjects] = useState<ProjectInfo[]>([]);
   const [name, setName] = useState<string>(l10n("SPLASH_DEFAULT_PROJECT_NAME"));
-  const [path, setPath] = useState<string>(getLastUsedPath());
+  const [path, setPath] = useState<string>("");
   const [nameError, setNameError] = useState("");
   const [pathError, setPathError] = useState("");
   const [creating, setCreating] = useState(false);
   const windowFocus = useWindowFocus();
+
+  useEffect(() => {
+    getLastUsedPath().then((path) => setPath(path));
+  }, []);
 
   useEffect(() => {
     ipcRenderer.send("request-recent-projects");
@@ -179,7 +181,7 @@ export default () => {
   };
 
   const onSelectFolder = async () => {
-    const path = await dialog.showOpenDialog({
+    const path = await ipcRenderer.invoke("show-open-dialog", {
       properties: ["openDirectory"],
     });
     if (path.filePaths[0]) {
@@ -252,7 +254,9 @@ export default () => {
           >
             {l10n("SPLASH_RECENT")}
           </SplashTab>
-          <SplashTab onClick={() => shell.openExternal(DOCS_URL)}>
+          <SplashTab
+            onClick={() => ipcRenderer.invoke("open-external", DOCS_URL)}
+          >
             {l10n("SPLASH_DOCUMENTATION")}
           </SplashTab>
           <FlexGrow />
@@ -347,7 +351,9 @@ export default () => {
                 <SplashCreditsContributor
                   key={contributor.id}
                   contributor={contributor}
-                  onClick={() => shell.openExternal(contributor.html_url)}
+                  onClick={() =>
+                    ipcRenderer.invoke("open-external", contributor.html_url)
+                  }
                 />
               ))}
             </SplashCreditsContent>

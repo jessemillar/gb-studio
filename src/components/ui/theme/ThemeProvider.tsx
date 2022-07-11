@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from "react";
-import { ipcRenderer, remote } from "electron";
+import { ipcRenderer } from "electron";
 import { ThemeProvider } from "styled-components";
 import lightTheme from "./lightTheme";
 import darkTheme from "./darkTheme";
@@ -8,8 +8,6 @@ import darkThemeWin from "./darkThemeWin";
 import neonTheme from "./neonTheme";
 import settings from "electron-settings";
 import { ThemeInterface } from "./ThemeInterface";
-
-const { nativeTheme } = remote;
 
 const themeIds = ["dark", "light", "neon"] as const;
 type ThemeId = typeof themeIds[number];
@@ -57,11 +55,9 @@ const toThemeId = (
 const Provider: FC = ({ children }) => {
   const [theme, setTheme] = useState<ThemeInterface>(lightTheme);
   useEffect(() => {
-    const updateAppTheme = () => {
-      const themeId = toThemeId(
-        settings.get?.("theme"),
-        nativeTheme?.shouldUseDarkColors
-      );
+    const updateAppTheme = async () => {
+      const shouldUseDark = await ipcRenderer.invoke("should-use-dark-colors");
+      const themeId = toThemeId(settings.get?.("theme"), shouldUseDark);
       if (process.platform === "darwin") {
         setTheme(themes[themeId]);
       } else {
@@ -69,7 +65,7 @@ const Provider: FC = ({ children }) => {
       }
     };
 
-    nativeTheme?.on("updated", () => {
+    ipcRenderer?.on("native-theme-updated", () => {
       updateAppTheme();
     });
 

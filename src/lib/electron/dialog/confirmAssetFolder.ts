@@ -1,10 +1,10 @@
-import electron from "electron";
+import { ipcRenderer } from "electron";
 import { AssetFolder } from "../../project/assets";
 import l10n from "../../helpers/l10n";
 
-const dialog = electron.remote ? electron.remote.dialog : electron.dialog;
-
-export default (folders: AssetFolder[]): AssetFolder | undefined => {
+export default async (
+  folders: AssetFolder[]
+): Promise<AssetFolder | undefined> => {
   const cancelId = folders.length;
   const dialogOptions = {
     type: "info",
@@ -16,7 +16,7 @@ export default (folders: AssetFolder[]): AssetFolder | undefined => {
     detail: l10n("DIALOG_IMPORT_ASSET_DESCRIPTION"),
   };
 
-  const res = dialog.showMessageBoxSync(dialogOptions);
+  const res = await ipcRenderer.invoke("show-message-box-sync", dialogOptions);
 
   if (res === cancelId) {
     return undefined;

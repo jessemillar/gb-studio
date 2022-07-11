@@ -1,4 +1,11 @@
-import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  dialog,
+  shell,
+  nativeTheme,
+} from "electron";
 import windowStateKeeper from "electron-window-state";
 import settings from "electron-settings";
 import Path from "path";
@@ -529,6 +536,26 @@ ipcMain.on("music-data-receive", (_event, data) => {
   }
 });
 
+ipcMain.handle("show-open-dialog", async (_event, options) => {
+  return await dialog.showOpenDialog(options);
+});
+
+ipcMain.handle("show-message-box-sync", async (_event, options) => {
+  return await dialog.showMessageBoxSync(options);
+});
+
+ipcMain.handle("open-external", async (_event, file) => {
+  shell.openExternal(file);
+});
+
+ipcMain.handle("should-use-dark-colors", async (_event) => {
+  return nativeTheme.shouldUseDarkColors;
+});
+
+ipcMain.handle("get-path", async (event, type) => {
+  return app.getPath(type);
+});
+
 menu.on("new", async () => {
   newProject();
 });
@@ -641,6 +668,11 @@ menu.on("updateSetting", (setting: string, value: string | boolean) => {
     }
     mainWindow && mainWindow.webContents.send("updateSetting", setting, value);
   }
+});
+
+nativeTheme.on("updated", () => {
+  splashWindow && splashWindow.webContents.send("native-theme-update");
+  mainWindow && mainWindow.webContents.send("native-theme-update");
 });
 
 const newProject = async () => {

@@ -12,10 +12,8 @@ import { Button } from "ui/buttons/Button";
 import { DotsIcon } from "ui/icons/Icons";
 import { FixedSpacer, FlexGrow } from "ui/spacing/Spacing";
 import { AppSelect } from "ui/form/AppSelect";
-import { ipcRenderer, remote } from "electron";
+import { ipcRenderer } from "electron";
 import { OptionLabelWithInfo, Select } from "ui/form/Select";
-
-const { dialog } = remote;
 
 interface Options {
   value: number;
@@ -96,7 +94,7 @@ const Preferences = () => {
   };
 
   const onSelectTmpFolder = async () => {
-    const path = await dialog.showOpenDialog({
+    const path = await ipcRenderer.invoke("show-open-dialog", {
       properties: ["openDirectory"],
     });
     if (path.filePaths[0]) {
