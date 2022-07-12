@@ -1,4 +1,4 @@
-import { ipcRenderer, remote } from "electron";
+import { ipcRenderer } from "electron";
 import { Dispatch, Middleware } from "@reduxjs/toolkit";
 import Path from "path";
 import rimraf from "rimraf";
@@ -91,7 +91,7 @@ const buildGameMiddleware: Middleware<Dispatch, RootState> =
             `${outputRoot}/build/${buildType}`,
             `${projectRoot}/build/${buildType}`
           );
-          remote.shell.openItem(`${projectRoot}/build/${buildType}`);
+          ipcRenderer.invoke("open-path", `${projectRoot}/build/${buildType}`);
           dispatch(consoleActions.stdOut("-"));
           dispatch(
             consoleActions.stdOut(
@@ -135,7 +135,7 @@ const buildGameMiddleware: Middleware<Dispatch, RootState> =
           dispatch(consoleActions.stdOut(l10n("BUILD_CANCELLED")));
         } else {
           dispatch(navigationActions.setSection("build"));
-          dispatch(consoleActions.stdErr(e.toString()));
+          dispatch(consoleActions.stdErr(String(e)));
         }
         dispatch(consoleActions.completeConsole());
       }
@@ -178,7 +178,7 @@ const buildGameMiddleware: Middleware<Dispatch, RootState> =
       }
 
       ejectEngineToDir(outputDir).then(() => {
-        remote.shell.openItem(outputDir);
+        ipcRenderer.invoke("open-path", outputDir);
       });
     } else if (actions.exportProject.match(action)) {
       const state = store.getState();
@@ -263,14 +263,14 @@ const buildGameMiddleware: Middleware<Dispatch, RootState> =
         dispatch(consoleActions.stdOut(`Build Time: ${buildTime}ms`));
         dispatch(consoleActions.completeConsole());
 
-        remote.shell.openItem(exportRoot);
+        ipcRenderer.invoke("open-path", exportRoot);
       } catch (e) {
         if (typeof e === "string") {
           dispatch(navigationActions.setSection("build"));
           dispatch(consoleActions.stdErr(e));
         } else {
           dispatch(navigationActions.setSection("build"));
-          dispatch(consoleActions.stdErr(e.toString()));
+          dispatch(consoleActions.stdErr(String(e)));
         }
         dispatch(consoleActions.completeConsole());
         throw e;

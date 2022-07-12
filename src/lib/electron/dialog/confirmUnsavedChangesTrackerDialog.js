@@ -1,7 +1,5 @@
-import electron from "electron";
+import { ipcRenderer } from "electron";
 import l10n from "../../helpers/l10n";
-
-const dialog = electron.remote ? electron.remote.dialog : electron.dialog;
 
 export default (name) => {
   const dialogOptions = {
@@ -18,5 +16,5 @@ export default (name) => {
     detail: l10n("DIALOG_TRACKER_CHANGES_NOT_SAVED_DESCRIPTION"),
   };
 
-  return dialog.showMessageBoxSync(dialogOptions);
+  return ipcRenderer.sendSync("show-message-box-sync", dialogOptions);
 };

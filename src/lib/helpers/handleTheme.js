@@ -1,12 +1,11 @@
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/no-webpack-loader-syntax */
-import settings from "electron-settings";
 import { ipcRenderer } from "electron";
 import darkTheme from "!!raw-loader!../../styles/theme-dark.css";
 import lightTheme from "!!raw-loader!../../styles/theme.css";
 
 const updateMyAppTheme = async () => {
-  const settingsTheme = settings.get("theme");
+  const settingsTheme = ipcRenderer.sendSync("settings-get-sync", "theme");
   const theme =
     settingsTheme === "dark"
       ? "dark"

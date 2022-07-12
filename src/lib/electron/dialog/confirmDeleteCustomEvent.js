@@ -1,7 +1,5 @@
-import electron from "electron";
+import { ipcRenderer } from "electron";
 import l10n from "../../helpers/l10n";
-
-const dialog = electron.remote ? electron.remote.dialog : electron.dialog;
 
 export default (name, sceneNames, count) => {
   // eslint-disable-next-line global-require
@@ -20,5 +18,5 @@ export default (name, sceneNames, count) => {
     ),
   };
 
-  return dialog.showMessageBoxSync(dialogOptions);
+  return ipcRenderer.sendSync("show-message-box-sync", dialogOptions);
 };

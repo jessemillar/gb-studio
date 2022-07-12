@@ -1,7 +1,6 @@
 import Path from "path";
 import { ActionCreators } from "redux-undo";
 import { ipcRenderer, webFrame } from "electron";
-import settings from "electron-settings";
 import debounce from "lodash/debounce";
 import mapValues from "lodash/mapValues";
 import store from "store/configureStore";
@@ -16,7 +15,7 @@ import buildGameActions from "store/features/buildGame/buildGameActions";
 import clipboardActions from "store/features/clipboard/clipboardActions";
 import engineActions from "store/features/engine/engineActions";
 import errorActions from "store/features/error/errorActions";
-import initElectronL10n from "lib/helpers/initElectronL10n";
+import initElectronL10n from "lib/helpers/initElectronL10nRemote";
 import { clampSidebarWidth } from "lib/helpers/window/sidebar";
 import { initKeyBindings } from "lib/keybindings/keyBindings";
 import { TRACKER_REDO, TRACKER_UNDO } from "../../consts";
@@ -220,9 +219,18 @@ ipcRenderer.on("plugin-run", onPluginRun);
 ipcRenderer.on("paste-in-place", onPasteInPlace);
 ipcRenderer.on("keybindings-update", onKeyBindingsUpdate);
 
-const worldSidebarWidth = settings.get("worldSidebarWidth");
-const filesSidebarWidth = settings.get("filesSidebarWidth");
-const navigatorSidebarWidth = settings.get("navigatorSidebarWidth");
+const worldSidebarWidth = ipcRenderer.sendSync(
+  "settings-get-sync",
+  "worldSidebarWidth"
+);
+const filesSidebarWidth = ipcRenderer.sendSync(
+  "settings-get-sync",
+  "filesSidebarWidth"
+);
+const navigatorSidebarWidth = ipcRenderer.sendSync(
+  "settings-get-sync",
+  "navigatorSidebarWidth"
+);
 
 if (worldSidebarWidth) {
   store.dispatch(

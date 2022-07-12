@@ -29,7 +29,7 @@ import { NavigationSection } from "store/features/navigation/navigationState";
 import { ZoomSection } from "store/features/editor/editorState";
 import useWindowFocus from "ui/hooks/use-window-focus";
 import useWindowSize from "ui/hooks/use-window-size";
-import initElectronL10n from "lib/helpers/initElectronL10n";
+import initElectronL10n from "lib/helpers/initElectronL10nRemote";
 
 // Make sure localisation has loaded so that
 // l10n function can be used at top level

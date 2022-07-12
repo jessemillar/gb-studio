@@ -4,14 +4,13 @@ import actions from "../../../../src/store/features/clipboard/clipboardActions";
 import { RootState } from "../../../../src/store/configureStore";
 import { dummyActor } from "../../../dummydata";
 import { MiddlewareAPI, Dispatch, AnyAction } from "@reduxjs/toolkit";
-import { remote } from "electron";
+import { clipboard } from "electron";
 import { mocked } from "ts-jest/utils";
 import { ClipboardTypeActors } from "../../../../src/store/features/clipboard/clipboardTypes";
 
 jest.mock("electron");
 
-const mockedRemote = mocked(remote, true);
-const mockedClipboard = mockedRemote.clipboard;
+const mockedClipboard = mocked(clipboard, true);
 
 test("Should be able to copy actor to clipboard", async () => {
   mockedClipboard.writeBuffer.mockClear();

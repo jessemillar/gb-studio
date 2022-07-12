@@ -9,7 +9,7 @@ import ColorSlider from "./ColorSlider";
 import { paletteSelectors } from "store/features/entities/entitiesState";
 import entitiesActions from "store/features/entities/entitiesActions";
 import { Button } from "ui/buttons/Button";
-import { clipboard } from "store/features/clipboard/clipboardHelpers";
+import { clipboard } from "electron";
 
 const DEFAULT_WHITE = "E8F8E0";
 const DEFAULT_LIGHT = "B0F088";

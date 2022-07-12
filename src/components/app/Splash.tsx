@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Path from "path";
 import { ipcRenderer } from "electron";
-import settings from "electron-settings";
 import FocusLock, { AutoFocusInside } from "react-focus-lock";
 import { FlexGrow } from "ui/spacing/Spacing";
 import {
@@ -41,7 +40,7 @@ import gbs2Preview from "../../assets/templatePreview/gbs2.mp4";
 import gbhtmlPreview from "../../assets/templatePreview/gbhtml.mp4";
 import blankPreview from "../../assets/templatePreview/blank.png";
 import useWindowFocus from "ui/hooks/use-window-focus";
-import initElectronL10n from "lib/helpers/initElectronL10n";
+import initElectronL10n from "lib/helpers/initElectronL10nRemote";
 
 // Make sure localisation has loaded so that
 // l10n function can be used at top level
@@ -91,7 +90,9 @@ const templates: TemplateInfo[] = [
 ];
 
 const getLastUsedPath = () => {
-  const storedPath = String(settings.get("__lastUsedPath"));
+  const storedPath = String(
+    ipcRenderer.sendSync("settings-get-sync", "__lastUsedPath")
+  );
   if (storedPath && storedPath !== "undefined") {
     return Promise.resolve(Path.normalize(storedPath));
   }
@@ -99,15 +100,18 @@ const getLastUsedPath = () => {
 };
 
 const setLastUsedPath = (path: string) => {
-  settings.set("__lastUsedPath", path);
+  ipcRenderer.send("settings-set-sync", "__lastUsedPath", path);
 };
 
 const getLastUsedTab = () => {
-  return String(settings.get("__lastUsedSplashTab")) || "info";
+  return (
+    String(ipcRenderer.sendSync("settings-get-sync", "__lastUsedSplashTab")) ||
+    "info"
+  );
 };
 
 const setLastUsedTab = (tab: string) => {
-  settings.set("__lastUsedSplashTab", tab);
+  ipcRenderer.send("settings-set-sync", "__lastUsedSplashTab", tab);
 };
 
 const toSplashTab = (tab: string): SplashTabSection => {

@@ -8,7 +8,7 @@ import { Input } from "ui/form/Input";
 import { SearchableSettingRow } from "ui/form/SearchableSettingRow";
 import { CardButtons } from "ui/cards/Card";
 import { SettingRowInput, SettingRowLabel } from "ui/form/SettingRow";
-import initElectronL10n from "lib/helpers/initElectronL10n";
+import initElectronL10n from "lib/helpers/initElectronL10nRemote";
 
 // Make sure localisation has loaded so that
 // l10n function can be used at top level

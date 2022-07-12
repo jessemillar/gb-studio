@@ -1,5 +1,4 @@
-import { ipcRenderer, remote } from "electron";
-import settings from "electron-settings";
+import { ipcRenderer } from "electron";
 import uniq from "lodash/uniq";
 import confirmDeleteCustomEvent from "lib/electron/dialog/confirmDeleteCustomEvent";
 import confirmEnableColorDialog from "lib/electron/dialog/confirmEnableColorDialog";
@@ -34,23 +33,41 @@ const electronMiddleware: Middleware<Dispatch, RootState> =
     if (actions.openHelp.match(action)) {
       ipcRenderer.send("open-help", action.payload);
     } else if (actions.openFolder.match(action)) {
-      remote.shell.openItem(action.payload);
+      ipcRenderer.invoke("open-path", action.payload);
     } else if (actions.openFile.match(action)) {
       if (action.payload.type === "image") {
-        const app = String(settings.get("imageEditorPath") || "") || undefined;
+        const app =
+          String(
+            ipcRenderer.sendSync("settings-get-sync", "imageEditorPath") || ""
+          ) || undefined;
         open(action.payload.filename, { app });
       } else if (action.payload.type === "music") {
-        const app = String(settings.get("musicEditorPath") || "") || undefined;
+        const app =
+          String(
+            ipcRenderer.sendSync("settings-get-sync", "musicEditorPath") || ""
+          ) || undefined;
         open(action.payload.filename, { app });
       } else {
-        remote.shell.openItem(action.payload.filename);
+        ipcRenderer.invoke("open-path", action.payload.filename);
       }
     } else if (editorActions.resizeWorldSidebar.match(action)) {
-      settings.set("worldSidebarWidth", action.payload);
+      ipcRenderer.sendSync(
+        "settings-set-sync",
+        "worldSidebarWidth",
+        action.payload
+      );
     } else if (editorActions.resizeFilesSidebar.match(action)) {
-      settings.set("filesSidebarWidth", action.payload);
+      ipcRenderer.sendSync(
+        "settings-set-sync",
+        "filesSidebarWidth",
+        action.payload
+      );
     } else if (editorActions.resizeNavigatorSidebar.match(action)) {
-      settings.set("navigatorSidebarWidth", action.payload);
+      ipcRenderer.sendSync(
+        "settings-set-sync",
+        "navigatorSidebarWidth",
+        action.payload
+      );
     } else if (
       editorActions.setTool.match(action) &&
       action.payload.tool === "colors"
@@ -73,10 +90,8 @@ const electronMiddleware: Middleware<Dispatch, RootState> =
     } else if (settingsActions.setShowNavigator.match(action)) {
       ipcRenderer.send("set-show-navigator", action.payload);
     } else if (projectActions.loadProject.rejected.match(action)) {
-      const window = remote.getCurrentWindow();
       window.close();
     } else if (projectActions.closeProject.match(action)) {
-      const window = remote.getCurrentWindow();
       window.close();
     } else if (entitiesActions.removeCustomEvent.match(action)) {
       const state = store.getState();
@@ -276,7 +291,11 @@ const electronMiddleware: Middleware<Dispatch, RootState> =
         });
       }
     } else if (actions.showErrorBox.match(action)) {
-      remote.dialog.showErrorBox(action.payload.title, action.payload.content);
+      ipcRenderer.invoke(
+        "show-error-box",
+        action.payload.title,
+        action.payload.content
+      );
     }
 
     next(action);

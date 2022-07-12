@@ -1,4 +1,5 @@
-import { ipcRenderer } from "electron";
+import { app } from "electron";
+import settings from "electron-settings";
 import { loadLanguage } from "./l10n";
 
 let hasInitialised = false;
@@ -7,7 +8,9 @@ const initElectronL10n = () => {
   if (hasInitialised) {
     return;
   }
-  const appLocale = ipcRenderer.sendSync("get-app-locale-sync");
+  const settingsLocale = app && settings.get("locale");
+  const systemLocale = app ? app.getLocale() : "en";
+  const appLocale = String(settingsLocale || systemLocale);
   loadLanguage(appLocale);
   hasInitialised = true;
 };

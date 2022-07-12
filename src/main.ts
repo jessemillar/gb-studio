@@ -37,8 +37,6 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
-app.allowRendererProcessReuse = false;
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: BrowserWindow | null = null;
@@ -80,6 +78,7 @@ const createSplash = async (forceTab?: SplashTab) => {
     autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
       devTools: isDevMode,
       preload: SPLASH_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
@@ -116,6 +115,7 @@ const createPreferences = async () => {
     autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
       devTools: isDevMode,
       preload: PREFERENCES_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
@@ -155,6 +155,7 @@ const createWindow = async (projectPath: string) => {
     webPreferences: {
       nodeIntegration: true,
       nodeIntegrationInWorker: true,
+      contextIsolation: false,
       webSecurity: process.env.NODE_ENV !== "development",
       devTools: isDevMode,
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
@@ -316,6 +317,7 @@ const createMusic = async (open?: boolean) => {
       webPreferences: {
         nodeIntegration: true,
         nodeIntegrationInWorker: true,
+        contextIsolation: false,
         webSecurity: process.env.NODE_ENV !== "development",
         devTools: isDevMode,
         preload: MUSIC_WINDOW_PRELOAD_WEBPACK_ENTRY,
@@ -540,12 +542,43 @@ ipcMain.handle("show-open-dialog", async (_event, options) => {
   return await dialog.showOpenDialog(options);
 });
 
+ipcMain.handle("show-error-box", async (_event, title, content) => {
+  return await dialog.showErrorBox(title, content);
+});
+
 ipcMain.handle("show-message-box-sync", async (_event, options) => {
   return await dialog.showMessageBoxSync(options);
 });
 
+ipcMain.handle(
+  "show-message-box-on-main-window-sync",
+  async (_event, options) => {
+    if (mainWindow) {
+      return await dialog.showMessageBoxSync(mainWindow, options);
+    }
+  }
+);
+
+ipcMain.on("settings-get-sync", async (event, key) => {
+  event.returnValue = settings.get(key);
+});
+
+ipcMain.on("settings-set-sync", async (event, key, value) => {
+  settings.set(key, value);
+  event.returnValue = undefined;
+});
+
+ipcMain.on("settings-delete-sync", async (event, key) => {
+  settings.delete(key);
+  event.returnValue = undefined;
+});
+
 ipcMain.handle("open-external", async (_event, file) => {
   shell.openExternal(file);
+});
+
+ipcMain.handle("open-path", async (_event, file) => {
+  shell.openPath(file);
 });
 
 ipcMain.handle("should-use-dark-colors", async (_event) => {

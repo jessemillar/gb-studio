@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { AppContainer } from "react-hot-loader";
 import Preferences from "components/app/Preferences";
-import initElectronL10n from "lib/helpers/initElectronL10n";
+import initElectronL10n from "lib/helpers/initElectronL10nRemote";
 import "lib/helpers/handleTheme";
 import "../../styles/App.css";
 

@@ -1,8 +1,5 @@
-import electron from "electron";
+import { ipcRenderer } from "electron";
 import l10n from "../../helpers/l10n";
-
-const dialog = electron.remote ? electron.remote.dialog : electron.dialog;
-const win = electron.remote?.getCurrentWindow();
 
 export default () => {
   const dialogOptions = {
@@ -15,5 +12,8 @@ export default () => {
     detail: l10n("DIALOG_ENABLE_COLOR_MODE_DESCRIPTION"),
   };
 
-  return dialog.showMessageBoxSync(win, dialogOptions);
+  return ipcRenderer.sendSync(
+    "show-message-box-on-main-window-sync",
+    dialogOptions
+  );
 };

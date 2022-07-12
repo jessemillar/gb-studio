@@ -1,3 +1,4 @@
+import { ipcRenderer } from "electron";
 import fs from "fs-extra";
 import os from "os";
 import isElectron from "./isElectron";
@@ -7,9 +8,8 @@ export default (create = true) => {
   if (isElectron()) {
     // eslint-disable-next-line global-require
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const settings = require("electron-settings");
-    if (settings.get("tmpDir")) {
-      tmpPath = settings.get("tmpDir");
+    if (ipcRenderer.sendSync("settings-get-sync", "tmpDir")) {
+      tmpPath = ipcRenderer.sendSync("settings-get-sync", "tmpDir");
     }
   }
   if (

@@ -29,7 +29,7 @@ import actions from "./clipboardActions";
 import entitiesActions from "../entities/entitiesActions";
 import editorActions from "../editor/editorActions";
 import confirmReplaceCustomEvent from "lib/electron/dialog/confirmReplaceCustomEvent";
-import { clipboard, copy, pasteAny } from "./clipboardHelpers";
+import { copy, pasteAny } from "./clipboardHelpers";
 import {
   ClipboardTypeActors,
   ClipboardTypeMetasprites,
@@ -56,6 +56,7 @@ import {
 import keyBy from "lodash/keyBy";
 import { patchEventArgs } from "lib/helpers/eventHelpers";
 import { EVENT_CALL_CUSTOM_EVENT } from "lib/compiler/eventTypes";
+import { clipboard } from "electron";
 
 const generateLocalVariableInsertActions = (
   originalId: string,

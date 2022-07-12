@@ -10,7 +10,7 @@ import { SequenceEditor } from "./SequenceEditor";
 import { SongRow } from "./SongRow";
 import scrollIntoView from "scroll-into-view-if-needed";
 import { SongGridHeaderCell } from "./SongGridHeaderCell";
-import { ipcRenderer } from "electron";
+import { clipboard, ipcRenderer } from "electron";
 import {
   getInstrumentTypeByChannel,
   getInstrumentListByType,
@@ -20,7 +20,6 @@ import {
 import { getKeys, KeyWhen } from "lib/keybindings/keyBindings";
 import trackerActions from "store/features/tracker/trackerActions";
 import clipboardActions from "store/features/clipboard/clipboardActions";
-import { clipboard } from "store/features/clipboard/clipboardHelpers";
 import { cloneDeep } from "lodash";
 
 interface SongTrackerProps {

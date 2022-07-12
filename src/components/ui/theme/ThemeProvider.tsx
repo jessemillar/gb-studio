@@ -6,7 +6,6 @@ import darkTheme from "./darkTheme";
 import lightThemeWin from "./lightThemeWin";
 import darkThemeWin from "./darkThemeWin";
 import neonTheme from "./neonTheme";
-import settings from "electron-settings";
 import { ThemeInterface } from "./ThemeInterface";
 
 const themeIds = ["dark", "light", "neon"] as const;
@@ -57,7 +56,10 @@ const Provider: FC = ({ children }) => {
   useEffect(() => {
     const updateAppTheme = async () => {
       const shouldUseDark = await ipcRenderer.invoke("should-use-dark-colors");
-      const themeId = toThemeId(settings.get?.("theme"), shouldUseDark);
+      const themeId = toThemeId(
+        ipcRenderer.sendSync("settings-get-sync", "theme"),
+        shouldUseDark
+      );
       if (process.platform === "darwin") {
         setTheme(themes[themeId]);
       } else {
@@ -65,15 +67,17 @@ const Provider: FC = ({ children }) => {
       }
     };
 
-    ipcRenderer.on("native-theme-updated", () => {
-      updateAppTheme();
-    });
+    if (ipcRenderer) {
+      ipcRenderer.on("native-theme-updated", () => {
+        updateAppTheme();
+      });
 
-    ipcRenderer.on("update-theme", () => {
-      updateAppTheme();
-    });
+      ipcRenderer.on("update-theme", () => {
+        updateAppTheme();
+      });
 
-    updateAppTheme();
+      updateAppTheme();
+    }
   }, []);
   return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
 };

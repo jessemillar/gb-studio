@@ -1,12 +1,9 @@
 import fs from "fs-extra";
-import { remote, shell } from "electron";
-import settings from "electron-settings";
+import { ipcRenderer, shell } from "electron";
 import semverValid from "semver/functions/valid";
 import semverGt from "semver/functions/gt";
 import { LATEST_PROJECT_VERSION } from "./migrateProject";
 import l10n from "../helpers/l10n";
-
-const dialog = remote && remote.dialog;
 
 export const needsUpdate = (currentVersion) => {
   if (semverValid(currentVersion) && semverValid(LATEST_PROJECT_VERSION)) {
@@ -46,7 +43,8 @@ export default async (projectPath) => {
         version: LATEST_PROJECT_VERSION,
       }),
     };
-    const { response: updateButtonIndex } = await dialog.showMessageBox(
+    const { response: updateButtonIndex } = ipcRenderer.sendSync(
+      "show-message-box-sync",
       dialogOptions
     );
     if (updateButtonIndex === 0) {
@@ -82,12 +80,14 @@ export default async (projectPath) => {
     }),
   };
 
-  const { response: buttonIndex, checkboxChecked } =
-    await dialog.showMessageBox(dialogOptions);
+  const { response: buttonIndex, checkboxChecked } = ipcRenderer.sendSync(
+    "show-message-box-sync",
+    dialogOptions
+  );
 
   if (checkboxChecked) {
     // Ignore all updates until manually check for updates
-    settings.set("dontCheckForUpdates", true);
+    ipcRenderer.send("settings-set-sync", "dontCheckForUpdates", true);
   }
   if (buttonIndex === 0) {
     return true;

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Path from "path";
-import settings from "electron-settings";
 import l10n from "lib/helpers/l10n";
 import getTmp from "lib/helpers/getTmp";
 import ThemeProvider from "ui/theme/ThemeProvider";
@@ -59,37 +58,51 @@ const Preferences = () => {
 
   useEffect(() => {
     setTmpPath(getTmp(false));
-    setImageEditorPath(String(settings.get("imageEditorPath") || ""));
-    setMusicEditorPath(String(settings.get("musicEditorPath") || ""));
-    setZoomLevel(Number(settings.get("zoomLevel") || 0));
-    setTrackerKeyBindings(Number(settings.get("trackerKeyBindings") || 0));
+    setImageEditorPath(
+      String(ipcRenderer.sendSync("settings-get-sync", "imageEditorPath") || "")
+    );
+    setMusicEditorPath(
+      String(ipcRenderer.sendSync("settings-get-sync", "musicEditorPath") || "")
+    );
+    setZoomLevel(
+      Number(ipcRenderer.sendSync("settings-get-sync", "zoomLevel") || 0)
+    );
+    setTrackerKeyBindings(
+      Number(
+        ipcRenderer.sendSync("settings-get-sync", "trackerKeyBindings") || 0
+      )
+    );
   }, []);
 
   const onChangeTmpPath = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPath = e.currentTarget.value;
     setTmpPath(newPath);
-    settings.set("tmpDir", newPath);
+    ipcRenderer.send("settings-set-sync", "tmpDir", newPath);
   };
 
   const onChangeImageEditorPath = (path: string) => {
     setImageEditorPath(path);
-    settings.set("imageEditorPath", path);
+    ipcRenderer.send("settings-set-sync", "imageEditorPath", path);
   };
 
   const onChangeMusicEditorPath = (path: string) => {
     setMusicEditorPath(path);
-    settings.set("musicEditorPath", path);
+    ipcRenderer.send("settings-set-sync", "musicEditorPath", path);
   };
 
   const onChangeZoomLevel = (zoomLevel: number) => {
     setZoomLevel(zoomLevel);
-    settings.set("zoomLevel", zoomLevel);
+    ipcRenderer.send("settings-set-sync", "zoomLevel", zoomLevel);
     ipcRenderer.send("window-zoom", zoomLevel);
   };
 
   const onChangeTrackerKeyBindings = (trackerKeyBindings: number) => {
     setTrackerKeyBindings(trackerKeyBindings);
-    settings.set("trackerKeyBindings", trackerKeyBindings);
+    ipcRenderer.sendSync(
+      "settings-set-sync",
+      "trackerKeyBindings",
+      trackerKeyBindings
+    );
     ipcRenderer.send("keybindings-updated");
   };
 
@@ -100,12 +113,12 @@ const Preferences = () => {
     if (path.filePaths[0]) {
       const newPath = Path.normalize(`${path.filePaths[0]}/`);
       setTmpPath(newPath);
-      settings.set("tmpDir", newPath);
+      ipcRenderer.send("settings-set-sync", "tmpDir", newPath);
     }
   };
 
   const onRestoreDefaultTmpPath = () => {
-    settings.delete("tmpDir");
+    ipcRenderer.sendSync("settings-delete-sync", "tmpDir");
     setTmpPath(getTmp(false));
   };
 

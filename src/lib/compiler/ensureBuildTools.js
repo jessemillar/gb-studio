@@ -9,7 +9,12 @@ const rmdir = promisify(rimraf);
 let firstBuild = true;
 
 const ensureBuildTools = async (tmpPath) => {
-  const buildToolsPath = `${buildToolsRoot}/${process.platform}-${process.arch}`;
+  let platform = `${process.platform}-${process.arch}`;
+  if (platform === "darwin-arm64") {
+    // Until GBDK-2020 has macOS ARM as official build target
+    platform = "darwin-x64";
+  }
+  const buildToolsPath = `${buildToolsRoot}/${platform}`;
   const expectedBuildToolsVersionPath = `${buildToolsPath}/tools_version`;
   const expectedToolsVersion = await fs.readFile(
     expectedBuildToolsVersionPath,

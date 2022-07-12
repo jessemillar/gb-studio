@@ -1,8 +1,7 @@
-import { dialog, shell } from "electron";
+import { dialog, ipcRenderer, shell } from "electron";
 import semverValid from "semver/functions/valid";
 import semverGt from "semver/functions/gt";
 import Octokit from "@octokit/rest";
-import settings from "electron-settings";
 import l10n from "./l10n";
 
 const github = new Octokit();
@@ -52,10 +51,14 @@ export const needsUpdate = async () => {
 export const checkForUpdate = async (force) => {
   if (force) {
     // If manually checking for updates using menu, clear previous settings
-    settings.set("dontCheckForUpdates", false);
-    settings.set("dontNotifyUpdatesForVersion", false);
+    ipcRenderer.send("settings-set-sync", "dontCheckForUpdates", false);
+    ipcRenderer.sendSync(
+      "settings-set-sync",
+      "dontNotifyUpdatesForVersion",
+      false
+    );
   }
-  if (!settings.get("dontCheckForUpdates")) {
+  if (!ipcRenderer.sendSync("settings-get-sync", "dontCheckForUpdates")) {
     let latestVersion;
 
     try {
@@ -81,7 +84,12 @@ export const checkForUpdate = async (force) => {
     }
 
     if (await needsUpdate()) {
-      if (settings.get("dontNotifyUpdatesForVersion") === latestVersion) {
+      if (
+        ipcRenderer.sendSync(
+          "settings-get-sync",
+          "dontNotifyUpdatesForVersion"
+        ) === latestVersion
+      ) {
         // User has chosen to ignore this version so don't show any details
         return;
       }
@@ -109,13 +117,17 @@ export const checkForUpdate = async (force) => {
 
       if (checkboxChecked) {
         // Ignore all updates until manually check for updates
-        settings.set("dontCheckForUpdates", true);
+        ipcRenderer.send("settings-set-sync", "dontCheckForUpdates", true);
       }
       if (buttonIndex === 0) {
         shell.openExternal("https://www.gbstudio.dev/download/");
       } else if (buttonIndex === 2) {
         // Ingore this version but notify for next
-        settings.set("dontNotifyUpdatesForVersion", latestVersion);
+        ipcRenderer.sendSync(
+          "settings-set-sync",
+          "dontNotifyUpdatesForVersion",
+          latestVersion
+        );
       }
     } else if (force) {
       // If specifically asked to check for updates need to show message

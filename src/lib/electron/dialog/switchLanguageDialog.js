@@ -1,7 +1,5 @@
-import electron from "electron";
+import { ipcRenderer } from "electron";
 import l10n from "../../helpers/l10n";
-
-const dialog = electron.remote ? electron.remote.dialog : electron.dialog;
 
 export default () => {
   const dialogOptions = {
@@ -13,5 +11,5 @@ export default () => {
     detail: l10n("DIALOG_LANGUAGE_SAVE_AND_RESTART"),
   };
 
-  dialog.showMessageBoxSync(dialogOptions);
+  return ipcRenderer.sendSync("show-message-box-sync", dialogOptions);
 };

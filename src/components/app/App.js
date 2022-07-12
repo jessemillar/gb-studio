@@ -18,7 +18,6 @@ import LoadingPane from "../library/LoadingPane";
 import { DropZone } from "ui/upload/DropZone";
 import projectActions from "store/features/project/projectActions";
 import { ipcRenderer } from "electron";
-import settings from "electron-settings";
 import SoundsPage from "components/pages/SoundsPage";
 
 class App extends Component {
@@ -38,7 +37,9 @@ class App extends Component {
     window.addEventListener("dragover", this.onDragOver);
     window.addEventListener("dragleave", this.onDragLeave);
     window.addEventListener("drop", this.onDrop);
-    const zoomLevel = Number(settings.get("zoomLevel") || 0);
+    const zoomLevel = Number(
+      ipcRenderer.sendSync("settings-get-sync", "zoomLevel") || 0
+    );
     ipcRenderer.send("window-zoom", zoomLevel);
   }
 
