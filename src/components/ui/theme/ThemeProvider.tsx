@@ -68,7 +68,7 @@ const Provider: FC = ({ children }) => {
     };
 
     if (ipcRenderer) {
-      ipcRenderer.on("native-theme-updated", () => {
+      ipcRenderer.on("native-theme-update", () => {
         updateAppTheme();
       });
 
