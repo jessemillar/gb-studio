@@ -236,6 +236,10 @@ const watchProject = async (
     pluginsWatcher.close();
   };
 
+  window.addEventListener("beforeunload", () => {
+    stopWatching();
+  });
+
   return stopWatching;
 };
 

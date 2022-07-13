@@ -16,7 +16,7 @@ export default async (
     detail: l10n("DIALOG_IMPORT_ASSET_DESCRIPTION"),
   };
 
-  const res = await ipcRenderer.invoke("show-message-box-sync", dialogOptions);
+  const res = ipcRenderer.sendSync("show-message-box-sync", dialogOptions);
 
   if (res === cancelId) {
     return undefined;

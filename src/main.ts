@@ -546,18 +546,18 @@ ipcMain.handle("show-error-box", async (_event, title, content) => {
   return await dialog.showErrorBox(title, content);
 });
 
-ipcMain.handle("show-message-box-sync", async (_event, options) => {
-  return await dialog.showMessageBoxSync(options);
+ipcMain.on("show-message-box-sync", async (event, options) => {
+  const res = dialog.showMessageBoxSync(options);
+  event.returnValue = res;
 });
 
-ipcMain.handle(
-  "show-message-box-on-main-window-sync",
-  async (_event, options) => {
-    if (mainWindow) {
-      return await dialog.showMessageBoxSync(mainWindow, options);
-    }
+ipcMain.on("show-message-box-on-main-window-sync", async (event, options) => {
+  if (mainWindow) {
+    const res = dialog.showMessageBoxSync(mainWindow, options);
+    event.returnValue = res;
   }
-);
+  event.returnValue = undefined;
+});
 
 ipcMain.on("settings-get-sync", async (event, key) => {
   event.returnValue = settings.get(key);
