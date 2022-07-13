@@ -1,8 +1,9 @@
-import { dialog, ipcRenderer, shell } from "electron";
+import { dialog, shell } from "electron";
 import semverValid from "semver/functions/valid";
 import semverGt from "semver/functions/gt";
 import Octokit from "@octokit/rest";
 import l10n from "./l10n";
+import settings from "electron-settings";
 
 const github = new Octokit();
 const oneHour = 60 * 60 * 1000;
@@ -51,14 +52,10 @@ export const needsUpdate = async () => {
 export const checkForUpdate = async (force) => {
   if (force) {
     // If manually checking for updates using menu, clear previous settings
-    ipcRenderer.send("settings-set-sync", "dontCheckForUpdates", false);
-    ipcRenderer.sendSync(
-      "settings-set-sync",
-      "dontNotifyUpdatesForVersion",
-      false
-    );
+    settings.set("dontCheckForUpdates", false);
+    settings.set("dontNotifyUpdatesForVersion", false);
   }
-  if (!ipcRenderer.sendSync("settings-get-sync", "dontCheckForUpdates")) {
+  if (!settings.get("dontCheckForUpdates")) {
     let latestVersion;
 
     try {
@@ -84,12 +81,7 @@ export const checkForUpdate = async (force) => {
     }
 
     if (await needsUpdate()) {
-      if (
-        ipcRenderer.sendSync(
-          "settings-get-sync",
-          "dontNotifyUpdatesForVersion"
-        ) === latestVersion
-      ) {
+      if (settings.get("dontNotifyUpdatesForVersion") === latestVersion) {
         // User has chosen to ignore this version so don't show any details
         return;
       }
@@ -117,17 +109,13 @@ export const checkForUpdate = async (force) => {
 
       if (checkboxChecked) {
         // Ignore all updates until manually check for updates
-        ipcRenderer.send("settings-set-sync", "dontCheckForUpdates", true);
+        settings.set("dontCheckForUpdates", true);
       }
       if (buttonIndex === 0) {
         shell.openExternal("https://www.gbstudio.dev/download/");
       } else if (buttonIndex === 2) {
         // Ingore this version but notify for next
-        ipcRenderer.sendSync(
-          "settings-set-sync",
-          "dontNotifyUpdatesForVersion",
-          latestVersion
-        );
+        settings.set("dontNotifyUpdatesForVersion", latestVersion);
       }
     } else if (force) {
       // If specifically asked to check for updates need to show message
