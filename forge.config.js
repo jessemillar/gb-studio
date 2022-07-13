@@ -53,7 +53,7 @@ module.exports = {
       "@electron-forge/plugin-webpack",
       {
         devServer: { liveReload: false, hot: true },
-        devContentSecurityPolicy: "*",
+        devContentSecurityPolicy: "",
         mainConfig: "./webpack.main.config.js",
         renderer: {
           config: "./webpack.renderer.config.js",
