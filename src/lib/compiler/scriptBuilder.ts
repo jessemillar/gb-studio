@@ -1770,6 +1770,10 @@ extern void __mute_mask_${symbol};
     }
   };
 
+  _callNative = (symbol: string) => {
+    this._addCmd("VM_CALL_NATIVE", `b_${symbol}`, `_${symbol}`);
+  };
+
   _returnFar = () => {
     this._addCmd("VM_RET_FAR");
   };
