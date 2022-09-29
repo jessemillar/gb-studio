@@ -69,6 +69,8 @@ import {
   updateEntitySymbol,
 } from "./entitiesHelpers";
 import spriteActions from "../sprite/spriteActions";
+import { isVariableCustomEvent } from "lib/compiler/scriptBuilder";
+import { sortByKey } from "lib/helpers/sortByKey";
 
 const MIN_SCENE_X = 60;
 const MIN_SCENE_Y = 30;
@@ -348,11 +350,7 @@ const removeSprite: CaseReducer<
     plugin?: string;
   }>
 > = (state, action) => {
-  const spriteSheets = localSpriteSheetSelectors.selectAll(state);
-  const existingAsset = spriteSheets.find(matchAsset(action.payload));
-  if (existingAsset) {
-    spriteSheetsAdapter.removeOne(state.spriteSheets, existingAsset.id);
-  }
+  removeAssetEntity(state.spriteSheets, spriteSheetsAdapter, action.payload);
 };
 
 const loadMusic: CaseReducer<
@@ -823,6 +821,7 @@ const addActor: CaseReducer<
     animSpeed: 15,
     paletteId: "",
     isPinned: false,
+    persistent: false,
     collisionGroup: "",
     ...(action.payload.defaults || {}),
     symbol: genEntitySymbol(state, "actor_0"),
@@ -2157,6 +2156,9 @@ const refreshCustomEventArgs: CaseReducer<
     return;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const eventLookup = require("lib/events").eventLookup;
+
   const variables = {} as Dictionary<CustomEventVariable>;
   const actors = {} as Dictionary<CustomEventActor>;
   const oldVariables = customEvent.variables;
@@ -2199,24 +2201,32 @@ const refreshCustomEventArgs: CaseReducer<
         };
       }
       Object.keys(args).forEach((arg) => {
-        if (isVariableField(scriptEvent.command, arg, args)) {
+        if (isVariableField(scriptEvent.command, arg, args, eventLookup)) {
           const addVariable = (variable: string) => {
             const letter = String.fromCharCode(
-              "A".charCodeAt(0) + parseInt(variable)
+              "A".charCodeAt(0) + parseInt(variable[1])
             );
             variables[variable] = {
               id: variable,
               name: oldVariables[variable]?.name || `Variable ${letter}`,
+              passByReference: oldVariables[variable]?.passByReference ?? true,
             };
           };
           const variable = args[arg];
-          if (isUnionVariableValue(variable) && variable.value) {
+          if (
+            isUnionVariableValue(variable) &&
+            variable.value &&
+            isVariableCustomEvent(variable.value)
+          ) {
             addVariable(variable.value);
-          } else if (typeof variable === "string") {
+          } else if (
+            typeof variable === "string" &&
+            isVariableCustomEvent(variable)
+          ) {
             addVariable(variable);
           }
         }
-        if (isPropertyField(scriptEvent.command, arg, args)) {
+        if (isPropertyField(scriptEvent.command, arg, args, eventLookup)) {
           const addPropertyActor = (property: string) => {
             const actor = property && property.replace(/:.*/, "");
             if (actor !== "player" && actor !== "$self$") {
@@ -2252,9 +2262,12 @@ const refreshCustomEventArgs: CaseReducer<
               const letter = String.fromCharCode(
                 "A".charCodeAt(0) + parseInt(variable, 10)
               ).toUpperCase();
-              variables[variable] = {
-                id: variable,
-                name: oldVariables[variable]?.name || `Variable ${letter}`,
+              const variableId = `V${variable}`;
+              variables[variableId] = {
+                id: variableId,
+                name: oldVariables[variableId]?.name || `Variable ${letter}`,
+                passByReference:
+                  oldVariables[variable]?.passByReference ?? true,
               };
             });
           }
@@ -2263,7 +2276,7 @@ const refreshCustomEventArgs: CaseReducer<
     }
   );
 
-  customEvent.variables = variables;
+  customEvent.variables = sortByKey(variables);
   customEvent.actors = actors;
 };
 
