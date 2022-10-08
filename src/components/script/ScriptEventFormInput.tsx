@@ -56,6 +56,7 @@ import {
 } from "./ScriptEditorContext";
 import ScriptEventFormMathArea from "./ScriptEventFormMatharea";
 import ScriptEventFormTextArea from "./ScriptEventFormTextarea";
+import ValueSelect, { isScriptValue } from "./ValueSelect";
 
 interface ScriptEventFormInputProps {
   id: string;
@@ -342,6 +343,17 @@ const ScriptEventFormInput = ({
         <BackgroundSelect
           name={id}
           value={String(value || "")}
+          onChange={onChangeField}
+        />
+      </OffscreenSkeletonInput>
+    );
+  } else if (type === "value") {
+    return (
+      <OffscreenSkeletonInput>
+        <ValueSelect
+          name={id}
+          entityId={entityId}
+          value={isScriptValue(value) ? value : undefined}
           onChange={onChangeField}
         />
       </OffscreenSkeletonInput>

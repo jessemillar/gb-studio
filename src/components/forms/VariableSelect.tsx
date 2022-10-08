@@ -40,6 +40,7 @@ interface VariableSelectProps extends SelectCommonProps {
 
 const Wrapper = styled.div`
   position: relative;
+  width: 100%;
 `;
 
 const Select = styled(DefaultSelect)`
